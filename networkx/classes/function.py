@@ -1609,3 +1609,5 @@ def _create_describe_info_dict(G):
     # Add density after number of components
     info["Density"] = nx.density(G)
     return info
+
+# track-flaky: commit trivial para disparar CI (2026-09-28)
