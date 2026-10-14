@@ -70,8 +70,8 @@ jobs:
           environments: test-extra-py312
       - name: Install pytest-regsmart
         run: |
-          pixi run -e py312 --as-is python -m pip install "$REGSMART_PACKAGE"
-          pixi run -e py312 --as-is python -m pip freeze
+          pixi run -e test-extra-py312 --as-is python -m pip install "$REGSMART_PACKAGE"
+          pixi run -e test-extra-py312 --as-is python -m pip freeze
       - name: Test regsmart-nr
         env:
           PYTEST_ADDOPTS: "--regsmart --no-rank"
