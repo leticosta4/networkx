@@ -82,8 +82,8 @@ jobs:
           environments: test-extra-py312
       - name: Install pytest-regsmart
         run: |
-          pixi run -e py312 --as-is python -m pip install "$REGSMART_PACKAGE"
-          pixi run -e py312 --as-is python -m pip freeze
+          pixi run -e test-extra-py312 --as-is python -m pip install "$REGSMART_PACKAGE"
+          pixi run -e test-extra-py312 --as-is python -m pip freeze
       - name: Restore pytest-regsmart cache
         id: restore-pytest-regsmart-cache
         uses: actions/cache/restore@v4
