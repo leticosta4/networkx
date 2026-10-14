@@ -1,0 +1,105 @@
+name: test regsmart
+
+on:
+  push:
+    branches: [main, '!flaky-r*', '!insert-mutations', '!track-flaky']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  REGSMART_PACKAGE: "git+https://github.com/leticosta4/pytest-regsmart@6c135576b567d77a8f412693a058cbe67c9e8590"
+
+jobs:
+  # base:
+  #   runs-on: ${{ matrix.os }}-latest
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu]
+  #       environment:
+  #         [
+  #           test-base-py313
+  #         ]
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with:
+  #         persist-credentials: false
+  #     - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+  #       with:
+  #         environments: ${{ matrix.environment }}
+  #     - name: Test NetworkX
+  #       run: pixi run -e ${{ matrix.environment }} test-base
+
+  # default:
+  #   runs-on: ${{ matrix.os }}-latest
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu]
+  #       environment:
+  #         [
+  #           test-default-py312,
+  #         ]
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with:
+  #         persist-credentials: false
+  #     - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+  #       with:
+  #         environments: ${{ matrix.environment }}
+  #     - name: Test for warnings at import time
+  #       run: pixi run -e ${{ matrix.environment }} check-import
+  #     - name: Test NetworkX
+  #       run: pixi run -e ${{ matrix.environment }} test-default
+
+  #por enquanto vou usar o extra como oficial que roda 10193 passed, 25 skipped (o base roda 8665 passed, 357 skipped e o defaut,  10083 passed, 62 skipped)
+  test-extra:
+    name: regsmart (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [rgsm_qtf, rgsm_recentfail, rgsm_hybrid]
+        include:
+          - mode: rgsm_qtf
+            weight: "1-0"
+          - mode: rgsm_recentfail
+            weight: "0-1"
+          - mode: rgsm_hybrid
+            weight: "1-1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+        with:
+          environments: test-extra-py312
+      - name: Install pytest-regsmart
+        run: |
+          pixi run -e py312 --as-is python -m pip install "$REGSMART_PACKAGE"
+          pixi run -e py312 --as-is python -m pip freeze
+      - name: Restore pytest-regsmart cache
+        id: restore-pytest-regsmart-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranked_selection_data
+          key: pytest-regsmart-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.mode }}
+          restore-keys: |
+            pytest-regsmart-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.mode }}-
+      - name: Test regsmart
+        env:
+          PYTEST_ADDOPTS: "--regsmart --ranking-weight=${{ matrix.weight }}"
+        run: pixi run -e test-extra-py312 test-default
+
+      - name: Save pytest-regsmart cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranked_selection_data
+          key: pytest-regsmart-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.mode }}-${{ github.run_id }}

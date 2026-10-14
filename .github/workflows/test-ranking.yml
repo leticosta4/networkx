@@ -1,0 +1,111 @@
+name: test ranking
+
+on:
+  push:
+    branches: [main, '!flaky-r*', '!insert-mutations', '!track-flaky']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  RANKING_PACKAGE: "pytest-ranking"
+
+jobs:
+  # base:
+  #   runs-on: ${{ matrix.os }}-latest
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu]
+  #       environment:
+  #         [
+  #           test-base-py313
+  #         ]
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with:
+  #         persist-credentials: false
+  #     - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+  #       with:
+  #         environments: ${{ matrix.environment }}
+  #     - name: Test NetworkX
+  #       run: pixi run -e ${{ matrix.environment }} test-base
+
+  # default:
+  #   runs-on: ${{ matrix.os }}-latest
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu]
+  #       environment:
+  #         [
+  #           test-default-py312,
+  #         ]
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with:
+  #         persist-credentials: false
+  #     - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+  #       with:
+  #         environments: ${{ matrix.environment }}
+  #     - name: Test for warnings at import time
+  #       run: pixi run -e ${{ matrix.environment }} check-import
+  #     - name: Test NetworkX
+  #       run: pixi run -e ${{ matrix.environment }} test-default
+
+  #por enquanto vou usar o extra como oficial que roda 10193 passed, 25 skipped (o base roda 8665 passed, 357 skipped e o defaut,  10083 passed, 62 skipped)
+  test-extra:
+    name: ranking (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [rkn_qtf, rkn_recentfail, rkn_simchgpath, rkn_hybrid]
+        include:
+          - mode: rkn_qtf
+            weight: "1-0-0"
+          - mode: rkn_recentfail
+            weight: "0-1-0"
+          - mode: rkn_simchgpath
+            weight: "0-0-1"
+          - mode: rkn_hybrid
+            weight: "1-1-1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+        with:
+          environments: test-extra-py312
+
+      - name: Install pytest-ranking
+        run: |
+          pixi run -e py312 --as-is python -m pip install "$RANKING_PACKAGE"
+          pixi run -e py312 --as-is python -m pip freeze
+
+      - name: Restore pytest-ranking cache
+        id: restore-pytest-ranking-cache
+        if: always()
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data
+          key: pytest-ranking-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.mode }}
+      
+      - name: Test ranking
+        env:
+          PYTEST_ADDOPTS: "--rank --rank-weight=${{ matrix.weight }}"
+        run: pixi run -e test-extra-py312 test-default
+
+      - name: Save pytest-ranking cache
+        id: save-pytest-ranking-cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data
+          key: pytest-ranking-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.mode }}-${{ github.run_id }}
