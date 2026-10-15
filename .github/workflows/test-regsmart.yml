@@ -85,6 +85,7 @@ jobs:
           python -m pip install uv
           uv pip install --python "$GITHUB_WORKSPACE/.pixi/envs/test-extra-py312/bin/python" "$REGSMART_PACKAGE"
           uv pip freeze --python "$GITHUB_WORKSPACE/.pixi/envs/test-extra-py312/bin/python"
+      - name: Restore pytest-regsmart cache
         id: restore-pytest-regsmart-cache
         uses: actions/cache/restore@v4
         with:
