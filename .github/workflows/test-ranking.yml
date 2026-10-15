@@ -86,8 +86,9 @@ jobs:
 
       - name: Install pytest-ranking
         run: |
-          pixi run -e test-extra-py312 --as-is python -m pip install "$RANKING_PACKAGE"
-          pixi run -e test-extra-py312 --as-is python -m pip freeze
+          python -m pip install uv
+          uv pip install --python "$GITHUB_WORKSPACE/.pixi/envs/test-extra-py312/bin/python" "$RANKING_PACKAGE"
+          uv pip freeze --python "$GITHUB_WORKSPACE/.pixi/envs/test-extra-py312/bin/python"
 
       - name: Restore pytest-ranking cache
         id: restore-pytest-ranking-cache
