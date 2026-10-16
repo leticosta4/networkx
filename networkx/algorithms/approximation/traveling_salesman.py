@@ -1246,7 +1246,7 @@ def simulated_annealing_tsp(
     # Find the cost of initial solution
     cost = sum(G[u][v].get(weight, 1) for u, v in pairwise(cycle))
 
-    count = 0
+    count = 1
     best_cycle = cycle.copy()
     best_cost = cost
     while count <= max_iterations and temp > 0:
