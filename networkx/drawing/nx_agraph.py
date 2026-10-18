@@ -209,6 +209,8 @@ def write_dot(G, path):
     A.clear()
     return
 
+
+@nx._dispatchable(name="agraph_read_dot", graphs=None, returns_graph=True)
 def read_dot(path):
     """Returns a NetworkX graph from a dot file on path.
 
