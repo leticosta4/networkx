@@ -75,5 +75,14 @@ jobs:
           uv pip freeze --python "$GITHUB_WORKSPACE/.pixi/envs/test-extra-py312/bin/python"
       - name: Test regsmart-nr
         env:
-          PYTEST_ADDOPTS: "--regsmart --no-rank"
+          PYTEST_ADDOPTS: "--report-log=reportlog.jsonl --regsmart --no-rank"
         run: pixi run -e test-extra-py312 test-default
+
+      - name: Upload report-log
+        if: ${{ !cancelled() }}   # com mutante o step de teste falha; sem isso o arquivo não sobe
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportlog-regsmart-nr
+          path: reportlog.jsonl
+          retention-days: 14
+          if-no-files-found: warn
