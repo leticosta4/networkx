@@ -267,6 +267,7 @@ def floyd_warshall_tree(G, weight="weight"):
         raise nx.NetworkXUnbounded("Negative cycle detected.")
     return dict(pred), dict(dist)
 
+@nx._dispatchable(edge_attrs="weight")
 def floyd_warshall_predecessor_and_distance(G, weight="weight"):
     """Find all-pairs shortest path lengths using Floyd's algorithm.
 
