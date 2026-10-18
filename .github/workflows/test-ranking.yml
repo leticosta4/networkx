@@ -112,3 +112,12 @@ jobs:
         with:
           path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data
           key: pytest-ranking-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.mode }}-${{ github.run_id }}
+
+      - name: Upload report-log
+        if: ${{ !cancelled() }}   # com mutante o step de teste falha; sem isso o arquivo não sobe
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportlog-${{ matrix.mode }}
+          path: reportlog.jsonl
+          retention-days: 14
+          if-no-files-found: warn
