@@ -343,6 +343,7 @@ pip = "*"
 lxml = ">=4.6"
 pydot = ">=3.0.1"
 sympy = ">=1.10"
+pytest-reportlog = "*"
 
 [tool.pixi.feature.example.dependencies]
 proj = "*"
