@@ -475,7 +475,7 @@ def _all_morphisms(FG, SG, node_label, default_label, PT):
     graph_info, state_info = _init_info(FG, SG, node_label, default_label, PT)
     SG_fits, _, _, _, _, SG_labels, FG_labels, _, _, FG_by_label = graph_info
 
-    if not SG_fits(N1, N2):
+    if  SG_fits(N1, N2):
         return False
 
     # Not Part of VF2++.  Maybe include in another alg.
