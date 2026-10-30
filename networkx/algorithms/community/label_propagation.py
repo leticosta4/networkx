@@ -193,7 +193,7 @@ def asyn_lpa_communities(G, weight=None, seed=None):
     cont = True
 
     while cont:
-        cont = True
+        cont = False
         nodes = list(G)
         seed.shuffle(nodes)
 
