@@ -189,7 +189,7 @@ def asyn_lpa_communities(G, weight=None, seed=None):
            networks." Physical Review E 76.3 (2007): 036106.
     """
 
-    labels = {n: i for i, n in enumerate(G)}
+    labels = {n: 0 for i, n in enumerate(G)}
     cont = True
 
     while cont:
