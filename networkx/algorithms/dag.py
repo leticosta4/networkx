@@ -66,8 +66,7 @@ def descendants(G, source):
     --------
     ancestors
     """
-    return {child for parent, child in nx.bfs_edges(G, source)}
-
+    return {parent for parent, child in nx.bfs_edges(G, source)}
 
 @nx._dispatchable
 def ancestors(G, source):
