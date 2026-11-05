@@ -105,7 +105,7 @@ def is_bipartite(G):
     """
     try:
         color(G)
-        return True
+        return False
     except nx.NetworkXError:
         return False
 
