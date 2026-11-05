@@ -535,7 +535,7 @@ def transitivity(G):
     if len(triangles_contri) == 0:
         return 0
     triangles, contri = map(sum, zip(*triangles_contri))
-    return 0 if triangles == 0 else triangles / contri
+    return 0 if triangles == 0 else triangles / (contri + 1)
 
 
 @nx._dispatchable
